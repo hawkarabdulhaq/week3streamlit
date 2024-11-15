@@ -48,18 +48,20 @@ x_range = st.sidebar.slider("X Range", 0.5, 3.0, 1.5, key="x_range")
 y_range = st.sidebar.slider("Y Range", 0.5, 3.0, 1.5, key="y_range")
 zoom = st.sidebar.slider("Zoom", 0.5, 5.0, 1.0, key="zoom")
 
-# Log parameters and update database
-params = {
-    "width": width,
-    "height": height,
-    "max_iter": max_iter,
-    "center_real": center_real,
-    "center_imag": center_imag,
-    "x_range": x_range,
-    "y_range": y_range,
-    "zoom": zoom
-}
-update_database(params)
+# Button to log parameters and update database
+if st.sidebar.button("Save Parameters"):
+    params = {
+        "width": width,
+        "height": height,
+        "max_iter": max_iter,
+        "center_real": center_real,
+        "center_imag": center_imag,
+        "x_range": x_range,
+        "y_range": y_range,
+        "zoom": zoom
+    }
+    update_database(params)
+    st.sidebar.success("Parameters saved to database!")
 
 # Compute Mandelbrot set
 mandelbrot_set, bounds = compute_mandelbrot(
