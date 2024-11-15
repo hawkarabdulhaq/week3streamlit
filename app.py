@@ -1,50 +1,41 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-import sqlite3
+import json
 from compute_mandelbrot import compute_mandelbrot
 from datetime import datetime
 
 # Database setup
-DATABASE = "parameters.db"
+DATABASE = "parameters.json"
 
 def initialize_database():
-    """Initialize the SQLite database if not exists."""
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS parameters (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            width INTEGER,
-            height INTEGER,
-            max_iter INTEGER,
-            center_real REAL,
-            center_imag REAL,
-            x_range REAL,
-            y_range REAL,
-            zoom REAL,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    conn.commit()
-    conn.close()
+    """Initialize JSON file storage."""
+    try:
+        with open(DATABASE, "x") as f:
+            json.dump({"parameters": []}, f)
+    except FileExistsError:
+        pass
 
 def update_database(params):
-    """Update the database with the latest parameter values."""
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO parameters (width, height, max_iter, center_real, center_imag, x_range, y_range, zoom)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (params["width"], params["height"], params["max_iter"], params["center_real"], 
-          params["center_imag"], params["x_range"], params["y_range"], params["zoom"]))
-    conn.commit()
-    conn.close()
+    """Update the JSON file with the latest parameters."""
+    with open(DATABASE, "r+") as f:
+        data = json.load(f)
+        params["updated_at"] = datetime.now().isoformat()  # Add timestamp
+        params["id"] = len(data["parameters"]) + 1  # Assign an ID
+        data["parameters"].append(params)
+        f.seek(0)
+        json.dump(data, f, indent=4)
+
+def read_database():
+    """Read parameters from the JSON file."""
+    with open(DATABASE, "r") as f:
+        data = json.load(f)
+    return data["parameters"]
 
 # Initialize database
 initialize_database()
 
 # App title
-st.title("Mandelbrot Set Visualization with Database Logging")
+st.title("Mandelbrot Set Visualization with JSON Database Logging")
 
 # Sidebar for user inputs
 st.sidebar.header("Visualization Parameters")
@@ -95,7 +86,5 @@ st.pyplot(fig)
 # Display database contents for debugging
 st.sidebar.header("Database Contents")
 if st.sidebar.button("Show Parameter Log"):
-    conn = sqlite3.connect(DATABASE)
-    df = pd.read_sql_query("SELECT * FROM parameters ORDER BY updated_at DESC", conn)
-    st.sidebar.write(df)
-    conn.close()
+    parameters = read_database()
+    st.sidebar.write(parameters)
