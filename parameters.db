@@ -1,0 +1,12 @@
+CREATE TABLE parameters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    width INTEGER,
+    height INTEGER,
+    max_iter INTEGER,
+    center_real REAL,
+    center_imag REAL,
+    x_range REAL,
+    y_range REAL,
+    zoom REAL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
