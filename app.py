@@ -1,8 +1,9 @@
 # app.py
-import numpy as np
-import matplotlib.pyplot as plt
+
 import pandas as pd
+import matplotlib.pyplot as plt
 import streamlit as st
+from compute_mandelbrot import compute_mandelbrot
 
 # Streamlit App Configuration
 st.set_page_config(page_title="Mandelbrot Set Visualizer", layout="wide")
@@ -58,26 +59,6 @@ colormap = st.sidebar.selectbox(
     plt.colormaps(),
     index=plt.colormaps().index(default_colormap),
 )
-
-# Mandelbrot Function
-def compute_mandelbrot(width, height, max_iter, center_real, center_imag, x_range, y_range, zoom):
-    x_min, x_max = center_real - x_range / zoom, center_real + x_range / zoom
-    y_min, y_max = center_imag - y_range / zoom, center_imag + y_range / zoom
-
-    x = np.linspace(x_min, x_max, width)
-    y = np.linspace(y_min, y_max, height)
-    X, Y = np.meshgrid(x, y)
-    C = X + 1j * Y
-
-    Z = np.zeros_like(C, dtype=complex)
-    mandelbrot_set = np.zeros(C.shape, dtype=int)
-
-    for i in range(max_iter):
-        mask = np.abs(Z) < 2
-        Z[mask] = Z[mask] * Z[mask] + C[mask]
-        mandelbrot_set[mask] = i
-
-    return mandelbrot_set
 
 # Generate and Display Mandelbrot Set
 mandelbrot_set = compute_mandelbrot(width, height, max_iter, center_real, center_imag, x_range, y_range, zoom)
