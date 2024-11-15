@@ -1,0 +1,9 @@
+parameter,value
+width,800
+height,800
+max_iter,100
+aspect_ratio,1:1 (Square)
+center_real,-0.5
+center_imag,0.0
+zoom,1.0
+colormap,coolwarm
