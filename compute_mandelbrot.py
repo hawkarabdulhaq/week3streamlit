@@ -2,41 +2,66 @@
 
 import numpy as np
 
-def compute_mandelbrot(width, height, max_iter, center_real, center_imag, x_range, y_range, zoom):
+def compute_mandelbrot(
+    width=800, 
+    height=800, 
+    max_iter=100, 
+    center_real=-0.5, 
+    center_imag=0.0, 
+    x_range=1.5, 
+    y_range=1.5, 
+    zoom=1.0
+):
     """
-    Computes the Mandelbrot set for the given parameters.
+    Compute the Mandelbrot set for given parameters.
 
     Parameters:
-    - width: Image width (pixels)
-    - height: Image height (pixels)
-    - max_iter: Maximum number of iterations
-    - center_real: Center of the Mandelbrot set (real part)
-    - center_imag: Center of the Mandelbrot set (imaginary part)
-    - x_range: Horizontal range of the plot
-    - y_range: Vertical range of the plot
-    - zoom: Zoom level
+    - width (int): Image width in pixels.
+    - height (int): Image height in pixels.
+    - max_iter (int): Maximum number of iterations to determine divergence.
+    - center_real (float): Real part of the center of the complex plane.
+    - center_imag (float): Imaginary part of the center of the complex plane.
+    - x_range (float): Range for the real axis.
+    - y_range (float): Range for the imaginary axis.
+    - zoom (float): Zoom level (higher values zoom in).
 
     Returns:
-    - A 2D NumPy array representing the Mandelbrot set.
+    - mandelbrot_set (np.ndarray): A 2D array representing iteration counts.
+    - bounds (tuple): Tuple of bounds (x_min, x_max, y_min, y_max) for plotting.
     """
-    # Define the range for the complex plane
+    # Adjust the bounds based on zoom level and center
     x_min, x_max = center_real - x_range / zoom, center_real + x_range / zoom
     y_min, y_max = center_imag - y_range / zoom, center_imag + y_range / zoom
 
-    # Create a meshgrid of complex numbers
-    x = np.linspace(x_min, x_max, width)
-    y = np.linspace(y_min, y_max, height)
-    X, Y = np.meshgrid(x, y)
+    # Generate a grid of complex numbers
+    real = np.linspace(x_min, x_max, width)
+    imag = np.linspace(y_min, y_max, height)
+    X, Y = np.meshgrid(real, imag)
     C = X + 1j * Y
 
-    # Initialize the array to store the iteration counts
+    # Initialize arrays for computation
     Z = np.zeros_like(C, dtype=complex)
     mandelbrot_set = np.zeros(C.shape, dtype=int)
 
-    # Compute the Mandelbrot set
+    # Mandelbrot computation: Iterative update for all points
     for i in range(max_iter):
         mask = np.abs(Z) < 2
         Z[mask] = Z[mask] * Z[mask] + C[mask]
         mandelbrot_set[mask] = i
 
-    return mandelbrot_set
+    return mandelbrot_set, (x_min, x_max, y_min, y_max)
+
+
+def normalize_iterations(mandelbrot_set, max_iter):
+    """
+    Normalize iteration values for smoother coloring.
+
+    Parameters:
+    - mandelbrot_set (np.ndarray): The raw Mandelbrot set with iteration counts.
+    - max_iter (int): Maximum iterations used in the computation.
+
+    Returns:
+    - normalized (np.ndarray): A normalized array of iteration counts for smoother rendering.
+    """
+    normalized = mandelbrot_set / max_iter
+    return normalized
