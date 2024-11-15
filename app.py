@@ -1,74 +1,39 @@
-# app.py
-
-import pandas as pd
-import matplotlib.pyplot as plt
 import streamlit as st
+import matplotlib.pyplot as plt
 from compute_mandelbrot import compute_mandelbrot
 
-# Streamlit App Configuration
-st.set_page_config(page_title="Mandelbrot Set Visualizer", layout="wide")
+# App title
+st.title("Mandelbrot Set Visualization")
 
-# Load default parameters from CSV
-param_file = "parameter.csv"
-try:
-    params = pd.read_csv(param_file).set_index("parameter").to_dict()["value"]
-except FileNotFoundError:
-    st.error(f"Parameter file '{param_file}' not found. Please ensure it exists in the main directory.")
-    st.stop()
-
-# Extract defaults from CSV
-default_width = int(params.get("width", 800))
-default_height = int(params.get("height", 800))
-default_max_iter = int(params.get("max_iter", 100))
-default_aspect_ratio = params.get("aspect_ratio", "1:1 (Square)")
-default_center_real = float(params.get("center_real", -0.5))
-default_center_imag = float(params.get("center_imag", 0.0))
-default_zoom = float(params.get("zoom", 1.0))
-default_colormap = params.get("colormap", "coolwarm")
-
-# Streamlit Title and Instructions
-st.title("Mandelbrot Set Visualizer")
-st.write("Use the controls in the sidebar to customize the Mandelbrot set visualization.")
-
-# Sidebar for user input
+# Sidebar for user inputs
 st.sidebar.header("Visualization Parameters")
-width = st.sidebar.number_input("Image Width", min_value=100, max_value=2000, value=default_width, step=100)
-height = st.sidebar.number_input("Image Height", min_value=100, max_value=2000, value=default_height, step=100)
-max_iter = st.sidebar.slider("Maximum Iterations", min_value=10, max_value=1000, value=default_max_iter, step=10)
+width = st.sidebar.slider("Image Width", 400, 1600, 800)
+height = st.sidebar.slider("Image Height", 400, 1600, 800)
+max_iter = st.sidebar.slider("Max Iterations", 50, 500, 100)
+center_real = st.sidebar.number_input("Center Real Part", -2.0, 2.0, -0.5)
+center_imag = st.sidebar.number_input("Center Imaginary Part", -2.0, 2.0, 0.0)
+x_range = st.sidebar.slider("X Range", 0.5, 3.0, 1.5)
+y_range = st.sidebar.slider("Y Range", 0.5, 3.0, 1.5)
+zoom = st.sidebar.slider("Zoom", 0.5, 5.0, 1.0)
 
-aspect_ratio = st.sidebar.selectbox(
-    "Aspect Ratio",
-    ["1:1 (Square)", "16:9 (Wide)", "4:3 (Classic)"],
-    index=["1:1 (Square)", "16:9 (Wide)", "4:3 (Classic)"].index(default_aspect_ratio),
+# Compute Mandelbrot set
+mandelbrot_set, bounds = compute_mandelbrot(
+    width=width,
+    height=height,
+    max_iter=max_iter,
+    center_real=center_real,
+    center_imag=center_imag,
+    x_range=x_range,
+    y_range=y_range,
+    zoom=zoom
 )
 
-# Map aspect ratios to actual values
-aspect_mapping = {"1:1 (Square)": (1.5, 1.5), "16:9 (Wide)": (1.5, 0.85), "4:3 (Classic)": (1.5, 1.125)}
-y_range, x_range = aspect_mapping[aspect_ratio]
-
-center_real = st.sidebar.slider(
-    "Center (Real Part)", min_value=-2.0, max_value=1.0, value=default_center_real, step=0.01
-)
-center_imag = st.sidebar.slider(
-    "Center (Imaginary Part)", min_value=-1.5, max_value=1.5, value=default_center_imag, step=0.01
-)
-zoom = st.sidebar.slider("Zoom Level", min_value=1.0, max_value=10.0, value=default_zoom, step=0.1)
-
-colormap = st.sidebar.selectbox(
-    "Colormap",
-    plt.colormaps(),
-    index=plt.colormaps().index(default_colormap),
-)
-
-# Generate and Display Mandelbrot Set
-mandelbrot_set = compute_mandelbrot(width, height, max_iter, center_real, center_imag, x_range, y_range, zoom)
+# Plotting the Mandelbrot set
+x_min, x_max, y_min, y_max = bounds
 
 fig, ax = plt.subplots(figsize=(8, 8))
-ax.imshow(mandelbrot_set, extent=[-x_range, x_range, -y_range, y_range], cmap=colormap, origin="lower")
-ax.set_title(f'Mandelbrot Set\nCenter: ({center_real}, {center_imag}), Zoom: {zoom}x')
-ax.set_xlabel('Real Part')
-ax.set_ylabel('Imaginary Part')
-plt.colorbar(ax.imshow(mandelbrot_set, extent=[-x_range, x_range, -y_range, y_range], cmap=colormap), ax=ax, label='Iterations')
-
-# Display the plot in Streamlit
+ax.imshow(mandelbrot_set, extent=[x_min, x_max, y_min, y_max], cmap="hot", origin="lower")
+ax.set_title(f"Mandelbrot Set\nCenter: ({center_real}, {center_imag}), Zoom: {zoom}")
+ax.set_xlabel("Real Part")
+ax.set_ylabel("Imaginary Part")
 st.pyplot(fig)
