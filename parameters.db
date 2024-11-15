@@ -1,12 +1,18 @@
-CREATE TABLE parameters (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    width INTEGER,
-    height INTEGER,
-    max_iter INTEGER,
-    center_real REAL,
-    center_imag REAL,
-    x_range REAL,
-    y_range REAL,
-    zoom REAL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+def initialize_database():
+    """Ensure the SQLite database is initialized."""
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS parameters (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                width INTEGER,
+                height INTEGER,
+                max_iter INTEGER,
+                center_real REAL,
+                center_imag REAL,
+                x_range REAL,
+                y_range REAL,
+                zoom REAL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
