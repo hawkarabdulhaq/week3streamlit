@@ -50,18 +50,3 @@ def compute_mandelbrot(
         mandelbrot_set[mask] = i
 
     return mandelbrot_set, (x_min, x_max, y_min, y_max)
-
-
-def normalize_iterations(mandelbrot_set, max_iter):
-    """
-    Normalize iteration values for smoother coloring.
-
-    Parameters:
-    - mandelbrot_set (np.ndarray): The raw Mandelbrot set with iteration counts.
-    - max_iter (int): Maximum iterations used in the computation.
-
-    Returns:
-    - normalized (np.ndarray): A normalized array of iteration counts for smoother rendering.
-    """
-    normalized = mandelbrot_set / max_iter
-    return normalized
