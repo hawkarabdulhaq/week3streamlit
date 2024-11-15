@@ -1,10 +1,29 @@
 # app.py
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 import streamlit as st
 
 # Streamlit App Configuration
 st.set_page_config(page_title="Mandelbrot Set Visualizer", layout="wide")
+
+# Load default parameters from CSV
+param_file = "parameter.csv"
+try:
+    params = pd.read_csv(param_file).set_index("parameter").to_dict()["value"]
+except FileNotFoundError:
+    st.error(f"Parameter file '{param_file}' not found. Please ensure it exists in the main directory.")
+    st.stop()
+
+# Extract defaults from CSV
+default_width = int(params.get("width", 800))
+default_height = int(params.get("height", 800))
+default_max_iter = int(params.get("max_iter", 100))
+default_aspect_ratio = params.get("aspect_ratio", "1:1 (Square)")
+default_center_real = float(params.get("center_real", -0.5))
+default_center_imag = float(params.get("center_imag", 0.0))
+default_zoom = float(params.get("zoom", 1.0))
+default_colormap = params.get("colormap", "coolwarm")
 
 # Streamlit Title and Instructions
 st.title("Mandelbrot Set Visualizer")
@@ -12,20 +31,33 @@ st.write("Use the controls in the sidebar to customize the Mandelbrot set visual
 
 # Sidebar for user input
 st.sidebar.header("Visualization Parameters")
-width = st.sidebar.number_input("Image Width", min_value=100, max_value=2000, value=800, step=100)
-height = st.sidebar.number_input("Image Height", min_value=100, max_value=2000, value=800, step=100)
-max_iter = st.sidebar.slider("Maximum Iterations", min_value=10, max_value=1000, value=100, step=10)
-aspect_ratio = st.sidebar.selectbox("Aspect Ratio", ["1:1 (Square)", "16:9 (Wide)", "4:3 (Classic)"], index=0)
+width = st.sidebar.number_input("Image Width", min_value=100, max_value=2000, value=default_width, step=100)
+height = st.sidebar.number_input("Image Height", min_value=100, max_value=2000, value=default_height, step=100)
+max_iter = st.sidebar.slider("Maximum Iterations", min_value=10, max_value=1000, value=default_max_iter, step=10)
+
+aspect_ratio = st.sidebar.selectbox(
+    "Aspect Ratio",
+    ["1:1 (Square)", "16:9 (Wide)", "4:3 (Classic)"],
+    index=["1:1 (Square)", "16:9 (Wide)", "4:3 (Classic)"].index(default_aspect_ratio),
+)
 
 # Map aspect ratios to actual values
 aspect_mapping = {"1:1 (Square)": (1.5, 1.5), "16:9 (Wide)": (1.5, 0.85), "4:3 (Classic)": (1.5, 1.125)}
 y_range, x_range = aspect_mapping[aspect_ratio]
 
-center_real = st.sidebar.slider("Center (Real Part)", min_value=-2.0, max_value=1.0, value=-0.5, step=0.01)
-center_imag = st.sidebar.slider("Center (Imaginary Part)", min_value=-1.5, max_value=1.5, value=0.0, step=0.01)
-zoom = st.sidebar.slider("Zoom Level", min_value=1.0, max_value=10.0, value=1.0, step=0.1)
+center_real = st.sidebar.slider(
+    "Center (Real Part)", min_value=-2.0, max_value=1.0, value=default_center_real, step=0.01
+)
+center_imag = st.sidebar.slider(
+    "Center (Imaginary Part)", min_value=-1.5, max_value=1.5, value=default_center_imag, step=0.01
+)
+zoom = st.sidebar.slider("Zoom Level", min_value=1.0, max_value=10.0, value=default_zoom, step=0.1)
 
-colormap = st.sidebar.selectbox("Colormap", plt.colormaps(), index=plt.colormaps().index("coolwarm"))
+colormap = st.sidebar.selectbox(
+    "Colormap",
+    plt.colormaps(),
+    index=plt.colormaps().index(default_colormap),
+)
 
 # Mandelbrot Function
 def compute_mandelbrot(width, height, max_iter, center_real, center_imag, x_range, y_range, zoom):
